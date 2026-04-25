@@ -4,14 +4,14 @@ import { expect } from '../utils/coustom_expect';
 
 let authToken: string;
 
-test.beforeAll('Get Auth Token', async ({ api }) => {
+test.beforeAll('Get Auth Token', async ({ api, config }) => {
 
     const tokenResponse = await api
         .path('/users/login')
         .body({
             "user": {
-                "email": "learnerharisbd@gmail.com",
-                "password": "H12345bd"
+                "email": config.userEmail,
+                "password": config.userPassword
             }
         })
         .postRequest(200);
