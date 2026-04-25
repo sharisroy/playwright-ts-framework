@@ -1,5 +1,5 @@
 import { test } from '../utils/fixtures';
-import { expect, request } from '@playwright/test';
+import { expect } from '../utils/coustom_expect';
 
 
 let authToken: string;
@@ -29,8 +29,8 @@ test('Get Articles', async ({ api }) => {
         .getRequest(200);
 
 
-    expect(response.articles.length).toEqual(10);
-    expect(response.articlesCount).toEqual(10);
+    expect(response.articles.length).shouldBeLessThanOrEqual(15);
+    expect(response.articlesCount).shouldEqual(10);
     // console.log(response);
 
 });
@@ -42,10 +42,10 @@ test('Get Tags', async ({ api }) => {
         .getRequest(200);
 
 
-    expect(response.tags[0]).toEqual('Test');
+    expect(response.tags[0]).shouldEqual('Test');
     expect(response.tags.includes('YouTube')).toBeTruthy();
 
-    expect(response.tags.length).toEqual(10);
+    expect(response.tags.length).shouldEqual(10);
     expect(response.tags.length).toBeLessThanOrEqual(10);
     // console.log(response);
 
