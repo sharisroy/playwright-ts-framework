@@ -1,0 +1,32 @@
+import { config } from "../api-test.config";
+import { RequestHandler } from "../utils/request_handler";
+import { APILogger } from "../utils/logger";
+import { request } from "@playwright/test";
+
+export async function createToken(email: string, password: string) {
+    const context = await request.newContext();
+    const logger = new APILogger();
+    const api = new RequestHandler(context, config.apiBaseUrl, logger);
+
+    try {
+const tokenResponse = await api
+        .path('/users/login')
+        .body({
+            "user": {
+                "email": email,
+                "password": password
+            }
+        })
+        .postRequest(200);
+
+    return 'Token ' + tokenResponse.user.token;
+    } catch (error) {
+        (Error as any).captureStackTrace(error, createToken);
+        throw error;
+    } finally {
+        await context.dispose();
+    }
+    
+
+
+}
