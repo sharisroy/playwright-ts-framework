@@ -1,0 +1,23 @@
+{
+  "name": "playwright-ts-framework",
+  "version": "1.0.0",
+  "description": "install Playwright",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharisroy/playwright-ts-framework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sharisroy/playwright-ts-framework/issues"
+  },
+  "homepage": "https://github.com/sharisroy/playwright-ts-framework#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0"
+  }
+}
