@@ -9,24 +9,24 @@ export async function createToken(email: string, password: string) {
     const api = new RequestHandler(context, config.apiBaseUrl, logger);
 
     try {
-const tokenResponse = await api
-        .path('/users/login')
-        .body({
-            "user": {
-                "email": email,
-                "password": password
-            }
-        })
-        .postRequest(200);
+        const tokenResponse = await api
+            .path('/users/login')
+            .body({
+                "user": {
+                    "email": email,
+                    "password": password
+                }
+            })
+            .postRequest(200);
 
-    return 'Token ' + tokenResponse.user.token;
+        return 'Token ' + tokenResponse.user.token;
     } catch (error) {
         (Error as any).captureStackTrace(error, createToken);
         throw error;
     } finally {
         await context.dispose();
     }
-    
+
 
 
 }
