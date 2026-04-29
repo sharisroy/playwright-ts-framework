@@ -18,6 +18,8 @@
   "homepage": "https://github.com/sharisroy/playwright-ts-framework#readme",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "ajv": "^8.20.0",
+    "genson-js": "^0.0.8"
   }
 }

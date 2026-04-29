@@ -2,68 +2,22 @@
 
 A clean and scalable **API Test Automation Framework** built with **Playwright + TypeScript**.
 
-This project demonstrates how to build reusable API test utilities using:
+This framework is designed for modern API testing with reusable utilities, clean project structure, and maintainable test code.
+
+It includes:
 
 * Custom fixtures
-* Request handler wrapper
+* Reusable request handler
 * Token-based authentication
 * Custom assertions
-* Logging for requests/responses
+* Request / Response logging
+* Schema validation
 * Environment-based configuration
-* Organized test execution with Playwright projects
-
-# Project Structure
-
-```bash
-playwright-ts-framework/
-│── tests/
-│   ├── smokeTest.spec.ts          # Main reusable API tests
-│   └── basic_requests.spec.ts     # Basic Playwright API examples
-│
-│── utils/
-│   ├── fixtures.ts                # Custom test fixtures
-│   ├── request_handler.ts         # Reusable API request methods
-│   ├── logger.ts                  # Request/Response logs
-│   └── coustom_expect.ts          # Custom assertions
-│
-│── helpers/
-│   └── createToken.ts             # Auto-generate auth token
-│
-│── playwright.config.ts           # Playwright config
-│── api-test.config.ts             # Environment config
-│── package.json
-│── README.md
-```
+* Playwright HTML reporting
 
 ---
 
-# Features
-## Reusable Request Handler
-
-Supports:
-
-* GET
-* POST
-* PUT
-* DELETE
-
----
-
-## Request / Response Logging
-
-If any test fails, logs include:
-
-* URL
-* Headers
-* Body
-* Response
-* Status Code
-
-Very helpful for debugging.
-
----
-
-# Installation
+# Quick Start
 
 ## 1. Clone Repository
 
@@ -84,29 +38,117 @@ npm install
 npx playwright install
 ```
 
+## 4. Run All Tests
+
+```bash
+npx playwright test
+```
+
+## 5. Open HTML Report
+
+```bash
+npx playwright show-report
+```
+
 ---
 
-# Configuration
+# Project Structure
 
-Update file:
-
-```ts
-api-test.config.ts
+```bash
+playwright-ts-framework/
+│── tests/
+│   ├── smokeTest.spec.ts          # Main reusable API tests
+│   └── basic_requests.spec.ts     # Basic API examples
+│
+│── utils/
+│   ├── fixtures.ts                # Custom fixtures
+│   ├── request_handler.ts         # Reusable API methods
+│   ├── logger.ts                  # Request/Response logs
+│   ├── schema-validator.ts        # Schema validator
+│   └── coustom_expect.ts          # Custom assertions
+│
+│── helpers/
+│   └── createToken.ts             # Auto auth token
+│
+│── response-schemas/              # JSON schema files
+│
+│── playwright.config.ts
+│── api-test.config.ts
+│── package.json
+│── README.md
 ```
+
+---
+
+# Features
+
+## Reusable Request Handler
+
+Supports:
+
+* GET
+* POST
+* PUT
+* DELETE
 
 Example:
 
 ```ts
-const config = {
-  apiBaseUrl: 'https://your-api-url.com',
-  userEmail: 'your@email.com',
-  userPassword: 'yourPassword'
-};
+await api
+  .path('/articles')
+  .params({ limit: 10 })
+  .getRequest(200);
 ```
 
 ---
 
-# How to Run Tests
+## Schema Validation
+
+Validate API responses using JSON Schema.
+
+### Install Packages
+
+```bash
+npm install ajv --save-dev
+npm i genson-js --save-dev
+```
+
+### Example Usage
+
+```ts
+await expect(response).shouldMatchSchema('articles', 'GET_articles', true);
+await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article', true);
+await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article');
+```
+
+### Important Note
+
+* Use `true` only when generating schema for the first time.
+* After schema file is created, remove `true`.
+
+### Example
+
+```ts
+await expect(response).shouldMatchSchema('articles', 'GET_articles');
+```
+
+---
+
+## Request / Response Logging
+
+If any test fails, logs include:
+
+* URL
+* Headers
+* Body
+* Response
+* Status Code
+
+This makes debugging faster and easier.
+
+---
+
+# Test Execution Commands
 
 ## Run All Tests
 
@@ -114,32 +156,25 @@ const config = {
 npx playwright test
 ```
 
-Runs all test files.
-
 ## Run Specific Project
 
 ```bash
-npx playwright test --project api-testing
+npx playwright test --project smoke-tests
 ```
 
-Available projects:
-
-* api-testing
-* smoke-tests
-
-## Run Specific Test File
+## Run Specific File
 
 ```bash
 npx playwright test tests/smokeTest.spec.ts
 ```
 
-## Run Single Test by Name
+## Run Single Test
 
 ```bash
 npx playwright test -g "Get Articles"
 ```
 
-## Run Failed Tests Only
+## Run Failed Tests
 
 ```bash
 npx playwright test --last-failed
@@ -151,24 +186,15 @@ npx playwright test --last-failed
 TEST_ENV=staging npx playwright test
 ```
 
-Example:
-
-```bash
-TEST_ENV=qa npx playwright test
-```
-
 ---
 
-
-# Reports
+# HTML Reports
 
 After execution:
 
 ```bash
 npx playwright show-report
 ```
-
-HTML report will open in browser.
 
 ---
 
@@ -178,32 +204,21 @@ HTML report will open in browser.
 
 Each test should run separately.
 
-## Use Reusable Methods
+## Reuse Common Methods
 
-Avoid duplicate request code.
+Avoid duplicate code.
 
-## Validate Status Codes
+## Validate Everything
 
-Always check expected response code.
+Always verify:
 
-## Use Environment Variables
+* Status code
+* Response body
+* Schema
 
-Do not hardcode production credentials.
+## Use Environments
 
----
-
-# Useful Commands
-
-```bash
-# Format code (Mac)
-Option + Shift + F
-
-# Run smoke tests
-npx playwright test --project smoke-tests
-
-# Run API tests
-npx playwright test --project api-testing
-```
+Do not hardcode credentials.
 
 ---
 
@@ -217,17 +232,17 @@ You can extend this framework with:
 * Allure Reports
 * Parallel Execution
 * Data Driven Testing
-* Schema Validation
 
 ---
 
 # Notes
 
-This framework is beginner-friendly and suitable for learning:
+This project is beginner-friendly and suitable for learning:
 
 * Playwright API Testing
 * TypeScript Framework Design
-* Reusable Automation Structure
+* Scalable Automation Framework
+* Schema Validation
 
 ---
 
@@ -239,6 +254,6 @@ GitHub: https://github.com/sharisroy
 
 ---
 
-# If You Like This Project
+# Support
 
-Give it a ⭐ on GitHub
+If you find this project useful, give it a ⭐ on GitHub.
