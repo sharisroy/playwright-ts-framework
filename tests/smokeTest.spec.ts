@@ -2,6 +2,7 @@ import { test } from '../utils/fixtures';
 import { expect } from '../utils/coustom_expect';
 import { createToken } from '../helpers/createToken';
 import { validateSchema } from '../utils/schema-validator';
+import articleResquestBody from '../request-objects/articles/POST-article.json'
 
 test('Get Articles', async ({ api }) => {
 
@@ -37,11 +38,7 @@ test('Get Tags', async ({ api }) => {
 test('Create and Delete Article', async ({ api }) => {
     const createArticleResponse = await api
         .path('/articles')
-        .body({
-            "article": {
-                "title": "New Article " + Date.now(), "description": "Article Description", "body": "Article Body", "tagList": ["Test", "API"]
-            }
-        })
+        .body(articleResquestBody)
         .postRequest(201);
     await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article');
     expect(createArticleResponse.article.title).toContain("New Article");
@@ -69,31 +66,26 @@ test('Create and Delete Article', async ({ api }) => {
 test('Create Update and Delete Article', async ({ api }) => {
     const createArticleResponse = await api
         .path('/articles')
-        .body({
-            "article": {
-                "title": "New Article " + Date.now(), "description": "Article Description", "body": "Article Body", "tagList": ["Test", "API"]
-            }
-        })
+        .body(articleResquestBody)
         .postRequest(201);
+
     expect(createArticleResponse.article.title).toContain("New Article");
     const articleSlug = createArticleResponse.article.slug;
 
+    const articleRequest = JSON.parse(JSON.stringify(articleResquestBody))
+    articleResquestBody.article.title = "Updated Article Title";
     const updateArticleResponse = await api
         .path(`/articles/${articleSlug}`)
-        .body({
-            "article": {
-                "title": "Updated Article " + Date.now(), "description": "Updated Description", "body": "Updated Body", "tagList": ["Test", "API", "Update"]
-            }
-        })
+        .body(articleResquestBody)
         .putRequest(200);
-    expect(updateArticleResponse.article.title).toContain("Updated Article");
+    expect(updateArticleResponse.article.title).toContain("Updated Article Title");
     const updatedArticleSlug = updateArticleResponse.article.slug;
 
     const articalsResponse = await api
         .path('/articles')
         .params({ limit: 10, offset: 0 })
         .getRequest(200);
-    expect(articalsResponse.articles[0].title).toContain("Updated Article");
+    expect(articalsResponse.articles[0].title).toContain("Updated Article Title");
 
 
     const deleteArticleResponse = await api
@@ -105,7 +97,7 @@ test('Create Update and Delete Article', async ({ api }) => {
         .path('/articles')
         .params({ limit: 10, offset: 0 })
         .getRequest(200);
-    expect(articalsResponseCheck.articles[0].title).not.toContain("Updated Article");
+    expect(articalsResponseCheck.articles[0].title).not.toContain("Updated Article Title");
 
 });
 

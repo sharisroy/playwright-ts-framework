@@ -1,0 +1,11 @@
+{
+    "article": {
+        "title": "New Article ",
+        "description": "Article Description",
+        "body": "Article Body",
+        "tagList": [
+            "Test",
+            "API"
+        ]
+    }
+}
