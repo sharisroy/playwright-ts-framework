@@ -37,13 +37,20 @@ export default defineConfig({
   projects: [
     {
       name: 'api-testing',
-      testMatch: 'examples*',
-      dependencies: ['smoke-tests']
-      // use: { ...devices['Desktop Chrome'] },
+      testDir: './tests/api-tests',
+      dependencies: ['api-smoke-tests']
     },
     {
-      name: 'smoke-tests',
-      // testMatch: 'smoke*'
+      name: 'api-smoke-tests',
+      testDir: './tests/api-tests',
+      testMatch: 'smoke-tests*',
+    },
+    {
+      name:'ui-tests',
+      testDir: './tests/ui-tests',
+      use: {
+        defaultBrowserType: 'chromium',
+       },
     }
   ],
 });

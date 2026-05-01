@@ -257,3 +257,9 @@ GitHub: https://github.com/sharisroy
 # Support
 
 If you find this project useful, give it a ⭐ on GitHub.
+
+.env package
+npm install dotenv --save-dev
+
+new run commnd from terminal using env file -> PROD_USERNAME=learnerharisbd@gmail.com PROD_PASSWORD=H12345bd npx playwright test smok
+eTest.spec.ts

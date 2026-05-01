@@ -1,8 +1,8 @@
-import { test } from '../utils/fixtures';
-import { expect } from '../utils/coustom_expect';
-import { createToken } from '../helpers/createToken';
-import { validateSchema } from '../utils/schema-validator';
-import articleResquestBody from '../request-objects/articles/POST-article.json'
+import { test } from '../../utils/fixtures';
+import { expect } from '../../utils/coustom_expect';
+import { createToken } from '../../helpers/createToken';
+import { validateSchema } from '../../utils/schema-validator';
+import articleResquestBody from '../../request-objects/articles/POST-article.json'
 
 test('Get Articles', async ({ api }) => {
 

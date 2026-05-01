@@ -1,5 +1,5 @@
-import { test } from "../utils/fixtures";
-import { expect } from "../utils/coustom_expect";
+import { test } from "../../utils/fixtures";
+import { expect } from "../../utils/coustom_expect";
 
 
 [
