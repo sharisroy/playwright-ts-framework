@@ -38,40 +38,85 @@ npm install
 npx playwright install
 ```
 
-## 4. Run All Tests
+## 4. Setup Environment Variables
+
+### Install dotenv
+
+```bash
+npm install dotenv --save-dev
+```
+
+### Create `.env` file
+
+```env
+BASE_URL=https://your-api-url.com
+EMAIL=your@email.com
+PASSWORD=yourPassword
+```
+
+> ⚠️ Do not commit `.env` file to GitHub
+
+---
+
+## 5. Run Tests
+
+### Run All Tests
 
 ```bash
 npx playwright test
 ```
 
-## 5. Open HTML Report
+### Run Specific File
+
+```bash
+npx playwright test tests/smokeTest.spec.ts
+```
+
+### Run with Environment Variables (Terminal Override)
+
+```bash
+PROD_USERNAME=learnerharisbd@gmail.com PROD_PASSWORD=H12345bd npx playwright test tests/smokeTest.spec.ts
+```
+
+---
+
+## 6. Open HTML Report
 
 ```bash
 npx playwright show-report
 ```
 
 ---
-
 # Project Structure
 
 ```bash
 playwright-ts-framework/
 │── tests/
-│   ├── smokeTest.spec.ts          # Main reusable API tests
-│   └── basic_requests.spec.ts     # Basic API examples
+│   ├── api/
+│   │   ├── smokeTest.spec.ts          # Main reusable API tests
+│   │   └── basic_requests.spec.ts     # Basic API examples
+│   │
+│   └── ui/
+│       ├── example.spec.ts            # Sample UI test
+│       └── login.spec.ts              # UI login test (if added)
+│
+│── pages/                             # Page Object Model (UI)
+│   ├── basePage.ts
+│   └── loginPage.ts
 │
 │── utils/
-│   ├── fixtures.ts                # Custom fixtures
-│   ├── request_handler.ts         # Reusable API methods
-│   ├── logger.ts                  # Request/Response logs
-│   ├── schema-validator.ts        # Schema validator
-│   └── coustom_expect.ts          # Custom assertions
+│   ├── fixtures.ts                    # Custom fixtures
+│   ├── request_handler.ts             # Reusable API methods
+│   ├── logger.ts                      # Request/Response logs
+│   ├── schema-validator.ts            # Schema validator
+│   └── coustom_expect.ts              # Custom assertions
 │
 │── helpers/
-│   └── createToken.ts             # Auto auth token
+│   └── createToken.ts                 # Auto auth token
 │
-│── response-schemas/              # JSON schema files
+│── response-schemas/                  # JSON schema files
 │
+│── .env                              # Environment variables
 │── playwright.config.ts
 │── api-test.config.ts
 │── package.json
@@ -80,24 +125,41 @@ playwright-ts-framework/
 
 ---
 
-# Features
+## UI Automation Support
 
-## Reusable Request Handler
+This framework also includes **basic UI automation support** using Playwright.
 
-Supports:
+### Features
 
-* GET
-* POST
-* PUT
-* DELETE
+* Page Object Model (POM) structure
+* Reusable page classes
+* UI + API combined testing capability
+* Environment-based configuration
 
-Example:
+### Example UI Test
 
 ```ts
-await api
-  .path('/articles')
-  .params({ limit: 10 })
-  .getRequest(200);
+test('Login Test', async ({ page }) => {
+  await page.goto('/');
+  await page.fill('#email', process.env.EMAIL!);
+  await page.fill('#password', process.env.PASSWORD!);
+  await page.click('button[type="submit"]');
+
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+---
+
+## Why UI + API Together?
+
+Combining UI and API testing in one framework helps:
+
+* Validate backend + frontend in a single flow
+* Speed up test execution using API setup
+* Reduce dependency on UI for test data creation
+* Improve overall test coverage
+
 ```
 
 ---
@@ -123,8 +185,8 @@ await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article'
 
 ### Important Note
 
-* Use `true` only when generating schema for the first time.
-* After schema file is created, remove `true`.
+* Use `true` only when generating schema for the first time
+* Remove it after schema file is created
 
 ### Example
 
@@ -216,7 +278,7 @@ Always verify:
 * Response body
 * Schema
 
-## Use Environments
+## Use Environment Variables
 
 Do not hardcode credentials.
 
@@ -257,9 +319,3 @@ GitHub: https://github.com/sharisroy
 # Support
 
 If you find this project useful, give it a ⭐ on GitHub.
-
-.env package
-npm install dotenv --save-dev
-
-new run commnd from terminal using env file -> PROD_USERNAME=learnerharisbd@gmail.com PROD_PASSWORD=H12345bd npx playwright test smok
-eTest.spec.ts

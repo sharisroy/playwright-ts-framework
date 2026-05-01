@@ -5,7 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 
 const processENV = process.env.TEST_ENV
-const env = processENV || 'prod';
+const env = processENV || 'staging';
 console.log(`Running tests in ${env} environment`);
 
 const config = {
