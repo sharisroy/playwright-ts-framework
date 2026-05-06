@@ -1,4 +1,4 @@
-// Ignor for Framwork, this is just to test the basic get, post, put and delete request using playwright api testing capabilities
+// Ignore for Framework, this is just to test the basic get, post, put and delete request using playwright api testing capabilities
 
 import { test, expect } from '@playwright/test';
 
@@ -74,15 +74,15 @@ test("Create New Article and Delete with Token", async ({ request }) => {
   expect(newArticleResponseJson.article.title).toContain("New Article");
   const articleSlug = newArticleResponseJson.article.slug;
 
-  const articalResponse = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
+  const articleResponse = await request.get('https://conduit-api.bondaracademy.com/api/articles?limit=10&offset=0', {
     headers: {
       'Authorization': `Token ${token}`
     }
   });
-  const articalResponseJson = await articalResponse.json();
-  expect(articalResponse.status()).toEqual(200);
-  expect(articalResponseJson.articles[0].title).toEqual(newArticleResponseJson.article.title);
-  console.log(articalResponseJson.articles[0].title);
+  const articleResponseJson = await articleResponse.json();
+  expect(articleResponse.status()).toEqual(200);
+  expect(articleResponseJson.articles[0].title).toEqual(newArticleResponseJson.article.title);
+  console.log(articleResponseJson.articles[0].title);
 
 
   // Update the article

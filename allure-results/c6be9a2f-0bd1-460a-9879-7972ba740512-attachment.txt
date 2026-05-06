@@ -1,0 +1,10 @@
+{
+  user: {
+    email: 'learnerharisbd@gmail.com',
+    username: 'haris',
+    bio: null,
+    image: 'https://conduit-api.bondaracademy.com/images/smiley-cyrus.jpeg',
+    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo1MTg3OH0sImlhdCI6MTc3NzkxNDk3NSwiZXhwIjoxNzgzMDk4OTc1fQ.JtZFg8FvrQgoy8ajGgcZaeYnJJ6lL1-0V5L7s5HWc5E'
+  }
+}
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjo1MTg3OH0sImlhdCI6MTc3NzkxNDk3NSwiZXhwIjoxNzgzMDk4OTc1fQ.JtZFg8FvrQgoy8ajGgcZaeYnJJ6lL1-0V5L7s5HWc5E

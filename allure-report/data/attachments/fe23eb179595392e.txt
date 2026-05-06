@@ -1,0 +1,39 @@
+{
+  article: {
+    slug: 'New-Article-1777914976317-51878',
+    title: 'New Article 1777914976317',
+    description: 'adsgas',
+    body: 'dasgas',
+    tagList: [],
+    createdAt: '2026-05-04T17:16:16.479Z',
+    updatedAt: '2026-05-04T17:16:16.479Z',
+    favorited: false,
+    favoritesCount: 0,
+    author: {
+      username: 'haris',
+      bio: null,
+      image: 'https://conduit-api.bondaracademy.com/images/smiley-cyrus.jpeg',
+      following: false
+    }
+  }
+}
+New Article 1777914976317
+{
+  article: {
+    slug: 'Updated-Article-1777914977080-51878',
+    title: 'Updated Article 1777914977080',
+    description: 'adsgas',
+    body: 'dasgas',
+    tagList: [],
+    createdAt: '2026-05-04T17:16:16.479Z',
+    updatedAt: '2026-05-04T17:16:17.253Z',
+    favorited: false,
+    favoritesCount: 0,
+    author: {
+      username: 'haris',
+      bio: null,
+      image: 'https://conduit-api.bondaracademy.com/images/smiley-cyrus.jpeg',
+      following: false
+    }
+  }
+}

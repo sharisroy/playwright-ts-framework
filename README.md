@@ -1,194 +1,207 @@
 # Playwright TypeScript Framework
 
-A clean and scalable **API Test Automation Framework** built with **Playwright + TypeScript**.
+A clean and scalable **API + UI Test Automation Framework** built with **Playwright + TypeScript**.
 
-This framework is designed for modern API testing with reusable utilities, clean project structure, and maintainable test code.
-
-It includes:
-
-* Custom fixtures
-* Reusable request handler
-* Token-based authentication
-* Custom assertions
-* Request / Response logging
-* Schema validation
-* Environment-based configuration
-* Playwright HTML reporting
+Designed for modern API testing with reusable utilities, a clean project structure, and maintainable test code.
 
 ---
 
-# Quick Start
+## Features
 
-## 1. Clone Repository
+- Custom Playwright fixtures with worker-scoped auth token
+- Fluent builder-pattern request handler
+- Token-based authentication (auto-injected)
+- Custom assertions with API activity logs on failure
+- Request / Response logging attached to HTML report
+- JSON Schema validation with auto-generation support
+- Environment-based configuration (`qa` / `staging` / `prod`)
+- Playwright HTML + List reporting
+- Test tagging for selective execution
+
+---
+
+## Quick Start
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/sharisroy/playwright-ts-framework.git
 cd playwright-ts-framework
 ```
 
-## 2. Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Install Playwright Browsers
+### 3. Install Playwright Browsers
 
 ```bash
 npx playwright install
 ```
 
-## 4. Setup Environment Variables
+### 4. Set Up Environment Variables
 
-### Install dotenv
-
-```bash
-npm install dotenv --save-dev
-```
-
-### Create `.env` file
+Create a `.env` file in the project root for production credentials:
 
 ```env
-BASE_URL=https://your-api-url.com
-EMAIL=your@email.com
-PASSWORD=yourPassword
+PROD_USERNAME=your@email.com
+PROD_PASSWORD=yourPassword
 ```
 
-> ⚠️ Do not commit `.env` file to GitHub
+> Do not commit `.env` to version control — it is listed in `.gitignore`
 
----
-
-## 5. Run Tests
-
-### Run All Tests
+### 5. Run Tests
 
 ```bash
 npx playwright test
 ```
 
-### Run Specific File
-
-```bash
-npx playwright test tests/smokeTest.spec.ts
-```
-
-### Run with Environment Variables (Terminal Override)
-
-```bash
-PROD_USERNAME=learnerharisbd@gmail.com PROD_PASSWORD=H12345bd npx playwright test tests/smokeTest.spec.ts
-```
-
 ---
 
-## 6. Open HTML Report
+## Project Structure
 
-```bash
-npx playwright show-report
 ```
-
----
-# Project Structure
-
-```bash
 playwright-ts-framework/
-│── tests/
-│   ├── api/
-│   │   ├── smokeTest.spec.ts          # Main reusable API tests
-│   │   └── basic_requests.spec.ts     # Basic API examples
-│   │
-│   └── ui/
-│       ├── example.spec.ts            # Sample UI test
-│       └── login.spec.ts              # UI login test (if added)
+├── tests/
+│   ├── api-tests/
+│   │   ├── smokeTest.spec.ts          # Main framework smoke tests
+│   │   ├── negativeTests.spec.ts      # Parameterized negative tests
+│   │   └── basic_requests.spec.ts     # Raw Playwright examples (no framework)
+│   └── ui-tests/
+│       └── login.spec.js              # UI login test
 │
-│── pages/                             # Page Object Model (UI)
-│   ├── basePage.ts
-│   └── loginPage.ts
+├── utils/
+│   ├── fixtures.ts                    # Custom Playwright fixtures
+│   ├── request_handler.ts             # Fluent API request builder
+│   ├── logger.ts                      # Request/Response in-memory logger
+│   ├── schema-validator.ts            # AJV-based JSON schema validator
+│   └── custom_expect.ts               # Custom assertion matchers
 │
-│── utils/
-│   ├── fixtures.ts                    # Custom fixtures
-│   ├── request_handler.ts             # Reusable API methods
-│   ├── logger.ts                      # Request/Response logs
-│   ├── schema-validator.ts            # Schema validator
-│   └── coustom_expect.ts              # Custom assertions
+├── helpers/
+│   └── createToken.ts                 # Login helper — returns auth token
 │
-│── helpers/
-│   └── createToken.ts                 # Auto auth token
+├── request-objects/
+│   └── articles/
+│       └── POST-article.json          # Request payload templates
 │
-│── response-schemas/                  # JSON schema files
+├── response-schemas/
+│   ├── articles/
+│   │   ├── GET_articles_schema.json
+│   │   └── POST_article_schema.json
+│   └── tags/
+│       └── GET_tags_schema.json
 │
-│── .env                              # Environment variables
-│── playwright.config.ts
-│── api-test.config.ts
-│── package.json
-│── README.md
+├── .env                               # Production credentials (gitignored)
+├── playwright.config.ts               # Playwright runner configuration
+├── api-test.config.ts                 # Environment-based API config
+└── package.json
 ```
 
 ---
 
-## UI Automation Support
+## Configuration
 
-This framework also includes **basic UI automation support** using Playwright.
+### Environments
 
-### Features
+The framework supports three environments controlled by the `TEST_ENV` variable:
 
-* Page Object Model (POM) structure
-* Reusable page classes
-* UI + API combined testing capability
-* Environment-based configuration
+| Environment | Credentials source |
+|---|---|
+| `staging` (default) | `api-test.config.ts` |
+| `qa` | `api-test.config.ts` |
+| `prod` | `PROD_USERNAME` / `PROD_PASSWORD` env vars |
 
-### Example UI Test
+### Playwright Projects
+
+| Project | Test directory | Notes |
+|---|---|---|
+| `api-smoke-tests` | `tests/api-tests/` | Matches `smoke-tests*` files |
+| `api-testing` | `tests/api-tests/` | Runs after `api-smoke-tests` |
+| `ui-tests` | `tests/ui-tests/` | Runs on Chromium |
+
+---
+
+## Writing Tests
+
+### Basic API Test
 
 ```ts
-test('Login Test', async ({ page }) => {
-  await page.goto('/');
-  await page.fill('#email', process.env.EMAIL!);
-  await page.fill('#password', process.env.PASSWORD!);
-  await page.click('button[type="submit"]');
+import { test } from '../../utils/fixtures';
+import { expect } from '../../utils/custom_expect';
 
-  await expect(page).toHaveURL('/dashboard');
+test('Get Articles', { tag: ['@smoke', '@articles', '@read'] }, async ({ api }) => {
+    const response = await api
+        .path('/articles')
+        .params({ limit: 10, offset: 0 })
+        .getRequest(200);
+
+    expect(response.articles.length).shouldEqual(10);
+    await expect(response).shouldMatchSchema('articles', 'GET_articles');
 });
 ```
 
----
+### Request Builder Reference
 
-## Why UI + API Together?
+| Method | Purpose |
+|---|---|
+| `.url(url)` | Override the default base URL |
+| `.path(path)` | Set the endpoint path |
+| `.params(obj)` | Append query parameters |
+| `.headers(obj)` | Merge extra request headers |
+| `.body(obj)` | Set the request body |
+| `.clearAuth()` | Remove the Authorization header |
 
-Combining UI and API testing in one framework helps:
-
-* Validate backend + frontend in a single flow
-* Speed up test execution using API setup
-* Reduce dependency on UI for test data creation
-* Improve overall test coverage
-
+```ts
+api
+  .url('https://other-service.com/api')
+  .path('/articles')
+  .params({ limit: 10, offset: 0 })
+  .headers({ 'X-Custom': 'value' })
+  .body(payload)
+  .clearAuth()
+  .getRequest(200);
 ```
+
+### HTTP Methods
+
+```ts
+api.path('/endpoint').getRequest(200);
+api.path('/endpoint').body(payload).postRequest(201);
+api.path('/endpoint').body(payload).putRequest(200);
+api.path('/endpoint').deleteRequest(204);
+```
+
+### Custom Assertions
+
+```ts
+expect(value).shouldEqual(expected);
+expect(value).shouldBeLessThanOrEqual(expected);
+await expect(response).shouldMatchSchema('articles', 'GET_articles');
+```
+
+All custom matchers append the recent API request/response log to failure messages.
 
 ---
 
 ## Schema Validation
 
-Validate API responses using JSON Schema.
+Validate response bodies against saved JSON schemas using [AJV](https://ajv.js.org/).
 
-### Install Packages
+### Step 1 — Generate the schema (first run only)
 
-```bash
-npm install ajv --save-dev
-npm i genson-js --save-dev
-```
-
-### Example Usage
+Pass `true` as the third argument to auto-generate a schema from the live response:
 
 ```ts
 await expect(response).shouldMatchSchema('articles', 'GET_articles', true);
-await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article', true);
-await expect(createArticleResponse).shouldMatchSchema('articles', 'POST_article');
 ```
 
-### Important Note
+This writes the schema to `response-schemas/articles/GET_articles_schema.json`.
 
-* Use `true` only when generating schema for the first time
-* Remove it after schema file is created
+### Step 2 — Validate on every subsequent run
 
-### Example
+Remove the `true` flag once the schema file exists:
 
 ```ts
 await expect(response).shouldMatchSchema('articles', 'GET_articles');
@@ -196,126 +209,115 @@ await expect(response).shouldMatchSchema('articles', 'GET_articles');
 
 ---
 
-## Request / Response Logging
+## Test Tags
 
-If any test fails, logs include:
+Tags enable selective test execution in CI pipelines and local runs.
 
-* URL
-* Headers
-* Body
-* Response
-* Status Code
+| Tag | Meaning |
+|---|---|
+| `@smoke` | Fast sanity checks — run before every deployment |
+| `@regression` | Full regression coverage |
+| `@articles` | Article-related endpoints |
+| `@tags` | Tags endpoint |
+| `@read` | Read-only (GET) tests |
+| `@crud` | Create / Update / Delete tests |
 
-This makes debugging faster and easier.
+### Adding Tags to a Test
+
+```ts
+test('Get Articles', { tag: ['@smoke', '@articles', '@read'] }, async ({ api }) => {
+    // ...
+});
+```
 
 ---
 
-# Test Execution Commands
-
-## Run All Tests
+## Test Execution Commands
 
 ```bash
+# Run all tests
 npx playwright test
-```
 
-## Run Specific Project
+# Run a specific project
+npx playwright test --project api-smoke-tests
+npx playwright test --project api-testing
+npx playwright test --project ui-tests
 
-```bash
-npx playwright test --project smoke-tests
-```
+# Run a specific file
+npx playwright test tests/api-tests/smokeTest.spec.ts
 
-## Run Specific File
-
-```bash
-npx playwright test tests/smokeTest.spec.ts
-```
-
-## Run Single Test
-
-```bash
+# Run a single test by name
 npx playwright test -g "Get Articles"
-```
 
-## Run Failed Tests
-
-```bash
+# Run only previously failed tests
 npx playwright test --last-failed
-```
 
-## Run by Environment
+# Filter by tag
+npx playwright test --grep @smoke
+npx playwright test --grep @read
+npx playwright test --grep @regression
+npx playwright test --grep @articles
 
-```bash
+# Exclude a tag
+npx playwright test --grep-invert @crud
+
+# Combine tags (AND logic)
+npx playwright test --grep "(?=.*@smoke)(?=.*@articles)"
+
+# Run against a specific environment
 TEST_ENV=staging npx playwright test
+TEST_ENV=prod npx playwright test
+
+# Run against production with inline credentials
+PROD_USERNAME=user@email.com PROD_PASSWORD=secret TEST_ENV=prod npx playwright test
 ```
 
 ---
 
-# HTML Reports
+## Reports
 
-After execution:
+### HTML Report
 
 ```bash
 npx playwright show-report
 ```
 
----
+### Allure Report
 
-# Best Practices
-
-## Keep Tests Independent
-
-Each test should run separately.
-
-## Reuse Common Methods
-
-Avoid duplicate code.
-
-## Validate Everything
-
-Always verify:
-
-* Status code
-* Response body
-* Schema
-
-## Use Environment Variables
-
-Do not hardcode credentials.
+```bash
+npx allure serve allure-results
+```
 
 ---
 
-# Future Improvements
+## Request / Response Logging
 
-You can extend this framework with:
+Every test step automatically attaches request and response details to the HTML report:
 
-* UI Automation
-* Database Validation
-* CI/CD Integration
-* Allure Reports
-* Parallel Execution
-* Data Driven Testing
+- Method + URL
+- Request headers and body
+- Response status code, headers, and body
 
----
-
-# Notes
-
-This project is beginner-friendly and suitable for learning:
-
-* Playwright API Testing
-* TypeScript Framework Design
-* Scalable Automation Framework
-* Schema Validation
+On assertion failure, the full API activity log is printed inline in the error message — no need to open the report to diagnose the issue.
 
 ---
 
-# Author
+## Best Practices
+
+- **Keep tests independent** — each test should set up and tear down its own data
+- **Use unique test data** — add timestamps or UUIDs to avoid "must be unique" conflicts across runs
+- **Validate everything** — status code, response body fields, and schema
+- **Never hardcode credentials** — use environment variables, especially for production
+- **Tag every test** — lets CI pipelines run only what is needed at each pipeline stage
+
+---
+
+## Author
 
 **Haris Chandra Roy**
 
-GitHub: https://github.com/sharisroy
+GitHub: [sharisroy](https://github.com/sharisroy)
 
 ---
 
-# Support
-
-If you find this project useful, give it a ⭐ on GitHub.
+If you find this project useful, give it a star on GitHub.

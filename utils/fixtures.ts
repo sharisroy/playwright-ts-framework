@@ -1,7 +1,7 @@
 import { test as base } from '@playwright/test';
 import { RequestHandler } from './request_handler';
 import { APILogger } from './logger';
-import { setCustomExpectLogger } from './coustom_expect';
+import { setCustomExpectLogger } from './custom_expect';
 import { config } from '../api-test.config';
 import { createToken } from '../helpers/createToken';
 

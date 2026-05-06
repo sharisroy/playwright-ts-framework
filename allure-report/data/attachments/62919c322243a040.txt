@@ -1,0 +1,7 @@
+{
+  errors: {
+    email: [ 'is invalid' ],
+    username: [ 'is too long (maximum is 20 characters)' ],
+    password: [ 'is too short (minimum is 8 characters)' ]
+  }
+}

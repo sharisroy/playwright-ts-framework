@@ -1,0 +1,6 @@
+{
+  errors: {
+    email: [ 'is invalid' ],
+    password: [ 'is too short (minimum is 8 characters)' ]
+  }
+}

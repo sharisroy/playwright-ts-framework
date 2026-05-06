@@ -1,16 +1,15 @@
-import test, { APIRequestContext } from "@playwright/test";
-import { expect } from "@playwright/test";
+import { APIRequestContext, test } from "@playwright/test";
 import { APILogger } from "./logger";
 
 export class RequestHandler {
-    private request: APIRequestContext
+    private request: APIRequestContext;
     private logger: APILogger;
     private baseUrl: string | undefined;
     private defaultBaseUrl: string;
     private apiPath: string = '';
-    private queryParams: object = {};
+    private queryParams: Record<string, any> = {};
     private apiHeaders: Record<string, string> = {};
-    private apiBody: object = {};
+    private apiBody: any = {};
     private defaultAuthToken: string;
     private clearAuthFlag: boolean;
 
@@ -22,99 +21,105 @@ export class RequestHandler {
         this.clearAuthFlag = false;
     }
 
-
+    // --- Request Builder Methods ---
     url(url: string) {
         this.baseUrl = url;
         return this;
     }
+
     path(path: string) {
         this.apiPath = path;
         return this;
     }
-    params(params: object) {
+
+    params(params: Record<string, any>) {
         this.queryParams = params;
         return this;
     }
+
     headers(headers: Record<string, string>) {
-        this.apiHeaders = headers;
-        // console.log(this.apiHeaders);
+        this.apiHeaders = { ...this.apiHeaders, ...headers };
         return this;
     }
-    body(body: object) {
+
+    body(body: any) {
         this.apiBody = body;
         return this;
     }
+
     clearAuth() {
         this.clearAuthFlag = true;
         return this;
     }
 
+    // --- Public HTTP Methods ---
     async getRequest(statusCode: number) {
-        let responseJSON: any;
-        const url = this.getURL();
-        await test.step(`GET request to ${url} with headers ${JSON.stringify(this.getHeaders())}`, async () => {
-            this.logger.logRequest('GET', url, this.getHeaders());
-            const response = await this.request.get(url, {
-                headers: this.getHeaders()
-            });
-            this.cleanUpFields();
-            const actualStatus = response.status();
-            responseJSON = await response.json();
-
-            this.logger.logResponse(actualStatus, response.headers(), responseJSON);
-            this.statusCodeValidatator(actualStatus, statusCode, this.getRequest);
-        });
-        return responseJSON;
+        return this.execute('get', statusCode);
     }
+
     async postRequest(statusCode: number) {
-        let responseJSON: any;
-        const url = this.getURL();
-        await test.step(`POST request to ${url} with headers ${JSON.stringify(this.getHeaders())}`, async () => {
-            this.logger.logRequest('POST', url, this.getHeaders(), this.apiBody);
-            const response = await this.request.post(url, {
-                headers: this.getHeaders(),
-                data: this.apiBody
-            });
-            this.cleanUpFields();
-            const actualStatus = response.status();
-            responseJSON = await response.json();
-
-            this.logger.logResponse(actualStatus, response.headers(), responseJSON);
-            this.statusCodeValidatator(actualStatus, statusCode, this.postRequest);
-        });
-        return responseJSON;
+        return this.execute('post', statusCode);
     }
-    async putRequest(statusCode: number) {
-        let responseJSON: any;
-        const url = this.getURL();
-        await test.step(`PUT request to ${url} with headers ${JSON.stringify(this.getHeaders())}`, async () => {
-            this.logger.logRequest('PUT', url, this.getHeaders(), this.apiBody);
-            const response = await this.request.put(url, {
-                headers: this.getHeaders(),
-                data: this.apiBody
-            });
-            this.cleanUpFields();
-            const actualStatus = response.status();
-            responseJSON = await response.json();
 
-            this.logger.logResponse(actualStatus, response.headers(), responseJSON);
-            this.statusCodeValidatator(actualStatus, statusCode, this.putRequest);
-        });
-        return responseJSON;
+    async putRequest(statusCode: number) {
+        return this.execute('put', statusCode);
     }
 
     async deleteRequest(statusCode: number) {
-        let responseJSON: any;
+        return this.execute('delete', statusCode);
+    }
+
+    /**
+     * Centralized execution logic for all API requests.
+     * Handles logging and report attachments for both success and failed cases.
+     */
+    private async execute(method: 'get' | 'post' | 'put' | 'delete', expectedStatus: number) {
         const url = this.getURL();
-        await test.step(`DELETE request to ${url} with headers ${JSON.stringify(this.getHeaders())}`, async () => {
-            this.logger.logRequest('DELETE', url, this.getHeaders());
-            const response = await this.request.delete(url, {
-                headers: this.getHeaders()
+        const headers = this.getHeaders();
+        const requestData = this.apiBody;
+        let responseJSON: any;
+
+        return await test.step(`${method.toUpperCase()} request to ${this.apiPath}`, async () => {
+            // 1. Log and Attach Request details BEFORE the call
+            this.logger.logRequest(method.toUpperCase(), url, headers, requestData);
+            await test.info().attach(`Request: ${method.toUpperCase()} ${this.apiPath}`, {
+                body: JSON.stringify({ url, headers, payload: requestData }, null, 2),
+                contentType: 'application/json'
             });
-            this.cleanUpFields();
+
+            // 2. Perform the API call
+            const response = await (this.request as any)[method](url, {
+                headers: headers,
+                data: Object.keys(requestData).length ? requestData : undefined
+            });
+
             const actualStatus = response.status();
-            this.logger.logResponse(actualStatus, response.headers());
-            this.statusCodeValidatator(actualStatus, statusCode, this.deleteRequest);
+            const responseText = await response.text();
+
+            // Safe JSON parsing to prevent crashes on empty or non-JSON bodies
+            try {
+                responseJSON = responseText ? JSON.parse(responseText) : {};
+            } catch {
+                responseJSON = { message: 'Response is not valid JSON', raw: responseText };
+            }
+
+            // 3. Log and Attach Response details BEFORE status validation
+            // This ensures data is in the report even if the status code check fails.
+            this.logger.logResponse(actualStatus, response.headers(), responseJSON);
+            await test.info().attach(`Response: ${actualStatus} ${this.apiPath}`, {
+                body: JSON.stringify({
+                    status: actualStatus,
+                    headers: response.headers(),
+                    body: responseJSON
+                }, null, 2),
+                contentType: 'application/json'
+            });
+
+            // 4. Cleanup and Status Validation
+            this.cleanUpFields();
+            this.statusCodeValidator(actualStatus, expectedStatus, this.execute);
+
+            return responseJSON;
         });
     }
 
@@ -125,20 +130,22 @@ export class RequestHandler {
         }
         return url.toString();
     }
-    private statusCodeValidatator(actualStatusCode: number, expectedStatusCode: number, callingMethod: Function) {
+
+    private statusCodeValidator(actualStatusCode: number, expectedStatusCode: number, callingMethod: Function) {
         if (actualStatusCode !== expectedStatusCode) {
             const logs = this.logger.getRecentLogs();
-            const errorMessage = new Error(`Expected status code ${expectedStatusCode} but got ${actualStatusCode}.\n\n Recent API Activity: ${logs}`);
+            const errorMessage = new Error(`Expected status code ${expectedStatusCode} but got ${actualStatusCode}.\n\nRecent API Activity: \n${logs}`);
             (Error as any).captureStackTrace(errorMessage, callingMethod);
-            throw errorMessage
+            throw errorMessage;
         }
     }
 
     private getHeaders() {
+        const finalHeaders = { ...this.apiHeaders };
         if (!this.clearAuthFlag) {
-            this.apiHeaders['Authorization'] = this.apiHeaders['Authorization'] || this.defaultAuthToken;
+            finalHeaders['Authorization'] = finalHeaders['Authorization'] || this.defaultAuthToken;
         }
-        return this.apiHeaders;
+        return finalHeaders;
     }
 
     private cleanUpFields() {
